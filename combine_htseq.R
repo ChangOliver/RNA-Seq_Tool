@@ -1,5 +1,6 @@
 #!/usr/bin/RScript
 # htseq-combine_all.R
+# adapted from https://wiki.bits.vib.be/index.php/NGS_RNASeq_DE_Exercise.4#Combine_individual_HTSeq_files_from_the_.27all.27_mapping_series
 # copy this code to RStudio and adapt file locations to match yours
 
 # Take 'all' htseq-count results and melt them in to one big dataframe

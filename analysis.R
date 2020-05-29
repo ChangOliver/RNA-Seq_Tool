@@ -102,8 +102,8 @@ plot.volcano <- function(resList, resDir){
   } 
 
   resList <- mutate(resList, 
-                         group = ifelse( (log2FoldChange >= 1.3 & -log10(padj) > 0.85), "R", 
-                                            ifelse( (log2FoldChange <= -1.3 & -log10(padj) > 0.85), "G", "B")))
+                         group = ifelse( (log2FoldChange >= 4 & -log10(padj) > 2), "R", 
+                                            ifelse( (log2FoldChange <= -4 & -log10(padj) > 2), "G", "B")))
   
   resList <- resList[order(resList$group, decreasing = TRUE), ]
   volcano <- ggplot(resList, mapping = aes(x = log2FoldChange, y = -log10(padj))) + 
@@ -116,7 +116,7 @@ plot.volcano <- function(resList, resDir){
           axis.title = element_text(size = rel(1.25)))
   ggsave(paste0(imgPath, "volcano.png"), width = 9.93, height = 6.86, dpi = 300)
     
-  label_volcano <- volcano + geom_label_repel(data = filter(resList, group == "G"), 
+  label_volcano <- volcano + geom_label_repel(data = filter(resList, group != "B"), 
                                               aes(label = as.character(name)), 
                                               size = 3) 
   ggsave(paste0(imgPath, "label_volcano.png"), width = 9.93, height = 6.86, dpi =300)
@@ -160,16 +160,16 @@ returnVal <- get.count(countDir)
 ### Run DESeq2
 print("Running DESeq2 analysis...")
 dds <- run.DESeq2(countDir, returnVal$table, returnVal$condition, resDir)
-#dds <- readRDS(file='./ddsHTSeq.rds')
+#dds <- readRDS(file='../testing/ddsHTSeq.rds')
 message("extracting result")
 desResult <- extract.result(dds, "DESeq2")
 message("generating volcano plot")
 desResult <- plot.volcano(desResult, resDir)
 
-### Run OUTRIDER
+# ### Run OUTRIDER
 print("Running OUTRIDER analysis...")
 ods <- run.OUTRIDER(countDir, resDir)
-#ods <- readRDS(file='./ods.rds')
+ods <- readRDS(file='../testing/ods.rds')
 message("extracting result")
 odsResult <- extract.result(ods, "OUTRIDER")
 message("generating QQ & ExRank plot")
@@ -178,7 +178,6 @@ plot_QQ_ExRank(odsResult, resDir)
 print("Dumping results...")
 write.csv(desResult, paste0(resDir, "DESeq2_result.csv"), row.names = FALSE)
 write.csv(odsResult, paste0(resDir, "OUTRIDER_result.csv"), row.names = FALSE)
-
 
 
 
