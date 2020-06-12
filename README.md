@@ -21,15 +21,26 @@ Arguments:
           1. DESeq data set object (dds.rds) / OUTRIDER data set object (ods.rds)
           2. DESeq2_result.csv / OUTRIDER_result.csv
           3. Plot and graphs of analysis's result
-          
+
+Optional Arguments:
+
     [log2(FoldChange) cutoff] / [log10(padj) cutoff]:
         The customized cutoff when plotting volcano plot, should be provided as a positive number.
         Default is 4 and 2, respectively.
         
 Sample:
-    ./analysis.sh -all path/to/htseq-files/  path/to/outputDir/ 4 2
+    ./analysis.sh -all path/to/htseq-files/  path/to/outputDir/
+    ./analysis.sh -deseq2 path/to/deseq2.rds  path/to/outputDir/ 3 1.5        
 ```
 The script will first execute *combine_htseq.R* to merge all htseq-count files into one *htseq_counts_all.csv*, then it will run *analysis.R* to perform RNA-Seq analysis.
+
+### Sample Usage
+```
+    ./analysis.sh -all path/to/htseq-file/dir/  path/to/outputDir/
+```
+```
+    ./analysis.sh -deseq2 path/to/rds  path/to/outputDir/ 3 1.5  
+```
 
 ## Note
 Run translate.R beforehand if desired genes are not found in the translation table. This process may take a long time as it needs to query [BioTools.fr](https://biotools.fr/human/ensembl_symbol_converter) if the ensembl isn't present in the downloaded HUGO database (hugo.txt).
