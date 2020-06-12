@@ -22,4 +22,4 @@ Arguments:
 The script will first execute *combine_htseq.R* to merge all htseq-count files into one *htseq_counts_all.csv*, then it will run *analysis.R* to perform RNA-Seq analysis.
 
 ## Note
-Run translate.R beforehand if desired genes are not found in translation table. This process may take a long time as it will query for translation.
+Run translate.R beforehand if desired genes are not found in translation table. This process may take a long time as it needs to check the HUGO database for translation. If the ensembl isn't in the databse, the program will have to query [BioTools.fr](https://biotools.fr/human/ensembl_symbol_converter) to complete the translation.
