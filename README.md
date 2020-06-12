@@ -5,19 +5,23 @@
 ./analysis.sh [mode] [input] [output] [log2(FoldChange) cutoff] [log10(padj) cutoff]
 
 Arguments:
+
     [mode]: 
         -all:     perform all analysis
         -deseq2:  perform only DESeq2 analysis
         -outrider perform only OUTRIDER analysis
+        
     [input]:
         If a directory: path to a directory contaning HTSeq data
         If a file:      existing DESeq2/OUTRIDER rds file
+        
     [output]:
         Directory to store program output
         The tool should produce:
           1. DESeq data set object (dds.rds) / OUTRIDER data set object (ods.rds)
           2. DESeq2_result.csv / OUTRIDER_result.csv
           3. Plot and graphs of analysis's result
+          
     [log2(FoldChange) cutoff] / [log10(padj) cutoff]:
         The customized cutoff when plotting volcano plot, should be provided as a positive number.
         Default is 4 and 2, respectively.
