@@ -164,11 +164,10 @@ padjCutoff <- args[[5]]
 task <- vector()
 if (mode == "-all"){
 	task <- c("DESeq2", "OUTRIDER")
-}
-else if (mode == "-outrider"){
+} else if (mode == "-outrider"){
+  print("OUTRIDEROK")
 	task <- c("OUTRIDER")
-}
-else if (mode == "-deseq2"){
+} else if (mode == "-deseq2"){
 	task <- c("DESeq2")
 }
 
@@ -180,8 +179,7 @@ if ("DESeq2" %in% task){
 		### Fetch htseq data
 		returnVal <- get.count(dataPath)
 		dds <- run.DESeq2(dataPath, returnVal$table, returnVal$condition, resDir)
-	}
-	else{
+	} else{
 		dds <- readRDS(file=dataPath)
   }
 
@@ -200,8 +198,7 @@ if ("OUTRIDER" %in% task){
 	print("Running OUTRIDER analysis...")
 	if (file_test("-d", dataPath)){
 		ods <- run.OUTRIDER(dataPath, resDir)
-  }
-	else{
+  } else{
 		ods <- readRDS(file=dataPath)
   }
 
