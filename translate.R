@@ -41,5 +41,5 @@ colnames(df)[1] <- "Ensembl.ID"
 df[ , "Gene.name"] <- NA
 df <- get.translation(df, 2)
 
-print("Dumping translation table")
+message("Dumping translation table")
 write.csv(df, "./translation_table.csv", row.names = FALSE)

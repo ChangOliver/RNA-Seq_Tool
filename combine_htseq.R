@@ -5,8 +5,6 @@
 
 # Take 'all' htseq-count results and melt them in to one big dataframe
 
-# where are we?
-
 print("Merging counts into one file...")
 args <- commandArgs(trailingOnly = TRUE)
 cntdir <- args[[1]]
