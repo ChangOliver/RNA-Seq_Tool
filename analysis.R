@@ -104,7 +104,7 @@ plot.volcano <- function(resList, resDir, fcCutoff=4, padjCutoff=2){
 
   resList <- mutate(resList, 
                          group = ifelse( (log2FoldChange >= fcCutoff & -log10(padj) > padjCutoff), "R", 
-                                            ifelse( (log2FoldChange <= -fcCutoff & -log10(padj) > padjCutoff), "G", "B")))
+                                            ifelse( (log2FoldChange <= (-fcCutoff) & -log10(padj) > padjCutoff), "G", "B")))
   
   resList <- resList[order(resList$group, decreasing = TRUE), ]
   volcano <- ggplot(resList, mapping = aes(x = log2FoldChange, y = -log10(padj))) + 
@@ -158,8 +158,9 @@ mode <- args[[1]]
 dataPath <- args[[2]]
 resDir <- args[[3]]
 fcCutoff <- args[[4]]
-padjCutoff <- args[[5]]
-
+fcCutoff <- as.numeric(args[[4]])
+padjCutoff <- as.numeric(args[[5]])
+print(typeof(fcCutoff))
 
 task <- vector()
 if (mode == "-all"){
