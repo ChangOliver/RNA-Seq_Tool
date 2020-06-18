@@ -1,5 +1,10 @@
 # RNA-Seq_Tool
 
+## Feature
+This tool supports  
++ DESeq2 analysis and plotting (Volcano plot)
++ OUTRIDER analysis and plotting (Quantile-Quantile plot, Expression Rank plot)
+
 ## Usage
 ```
 ./analysis.sh [mode] [input] [output] [log2(FoldChange) cutoff] [log10(padj) cutoff]
