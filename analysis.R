@@ -160,7 +160,6 @@ resDir <- args[[3]]
 fcCutoff <- args[[4]]
 fcCutoff <- as.numeric(args[[4]])
 padjCutoff <- as.numeric(args[[5]])
-print(typeof(fcCutoff))
 
 task <- vector()
 if (mode == "-all"){
