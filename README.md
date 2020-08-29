@@ -31,16 +31,16 @@ Optional Arguments:
 
     [log2(FoldChange) cutoff] / [log10(padj) cutoff]:
         The customized cutoff when plotting volcano plot (DESeq2), should be provided as a positive number.
-        Default is 4 and 2, respectively.       
+        Default is 2.5 and 2, respectively.       
 ```
 The script will first execute *combine_htseq.R* to merge all htseq-count files into one *htseq_counts_all.csv*, then it will run *analysis.R* to perform RNA-Seq analysis.
 
 ### Sample Usage
 ```
-    ./analysis.sh -all path/to/htseq-file/dir/  path/to/outputDir/
+    ./analysis.sh -all path/to/htseq-file/dir  path/to/outputDir
 ```
 ```
-    ./analysis.sh -deseq2 path/to/rds  path/to/outputDir/ 3 1.5  
+    ./analysis.sh -deseq2 path/to/rds  path/to/outputDir 3 1.5  
 ```
 
 ## Note
