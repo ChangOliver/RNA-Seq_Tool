@@ -1,4 +1,4 @@
-# RNA-Seq_Tool
+# RNASeq-Expression_Analysis_Tool
 
 ## Feature
 This tool supports  
