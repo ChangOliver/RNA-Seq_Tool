@@ -51,7 +51,7 @@ data <- rbind(data, tot.counts=colSums(data))
 data.all <- data[grep("^ENS", rownames(data), perl=TRUE, invert=FALSE), ]
 
 # write data to file
-write.csv(data.all, file = paste0(cntdir, "htseq_counts_all.csv"))
+write.csv(data.all, file = paste0(cntdir, "/htseq_counts_all.csv"))
 
 # cleanup intermediate objects
 rm(y, z, i, DT)

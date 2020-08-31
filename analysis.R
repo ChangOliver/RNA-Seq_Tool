@@ -18,7 +18,7 @@ suppressMessages(library(jsonlite))
 # Function declaration
 #############################
 get.translation <- function(res, col){
-  idSymbolTable <- read.csv(file = "./translation_table.csv")
+  idSymbolTable <- read.csv(file = paste0(srcDir, "/translation_table.csv"))
   translationDict <- as.vector(idSymbolTable$Gene.name)
   names(translationDict) <- idSymbolTable$Ensembl.ID
   
@@ -40,12 +40,12 @@ get.count <- function(dir){
   control <- grep("RNA-Control-.*", files, value=FALSE)
   
   #### Mark case or control
-  condition <- rep("Case", times=length(files))
+  condition <- rep("Case", times=length(files)) #names
   condition[control] <- "Control"
   
   #### create file info table, set conditions as factor
   table <- data.frame(sampleName = names, fileName = files, condition = condition)
-  table$condition <- factor(table$condition, levels = c("Control","Case"))  
+  table$condition <- relevel(table$condition, ref = "Control")  
   return(list("table" = table, "condition" = condition, "names" = names))
 }
 run.DESeq2 <- function(dir, table, condition, resDir){
@@ -55,12 +55,12 @@ run.DESeq2 <- function(dir, table, condition, resDir){
   
   #### Run differential expression and save dds object
   ddsHTSeq <- DESeq(ddsHTSeq, minReplicatesForReplace=Inf)
-  saveRDS(ddsHTSeq, file=paste0(resDir, 'dds.rds')) 
+  saveRDS(ddsHTSeq, file=paste0(resDir, '/dds.rds')) 
   return(ddsHTSeq)
 }
 run.OUTRIDER <- function(countDir, resDir){
   #### Load data
-  counts <- paste0(countDir, "htseq_counts_all.csv")
+  counts <- paste0(countDir, "/htseq_counts_all.csv")
   ctsTable <- read.table(counts, check.names=FALSE, header=TRUE, sep = ",", stringsAsFactors = FALSE)
   ctsMatrix <- as.matrix(ctsTable[,-1])
   rownames(ctsMatrix) <- as.character(get.translation(as.matrix(ctsTable[,1]), 1))
@@ -69,14 +69,14 @@ run.OUTRIDER <- function(countDir, resDir){
   ods <- OutriderDataSet(countData=ctsMatrix)
   ods <- filterExpression(ods, minCounts=TRUE, filterGenes=TRUE)
   ods <- OUTRIDER(ods)
-  saveRDS(ods, file = paste0(resDir, "ods.rds"))
+  saveRDS(ods, file = paste0(resDir, "/ods.rds"))
   return(ods)
 }
-extract.result <- function(dds, mode){
+extract.result <- function(dds, mode, case){
   
   if (mode == "DESeq2"){
     #### Extract result
-    res <- DESeq2::results(dds, contrast=c("condition", "Case", "Control"), cooksCutoff=FALSE, independentFiltering=FALSE)
+    res <- DESeq2::results(dds, contrast=c("condition", case, "Control"), cooksCutoff=FALSE, independentFiltering=FALSE)
   
     res <- data.frame(res, row.names = res@rownames)
     res <- subset(res, !is.na(res$padj))
@@ -94,13 +94,10 @@ extract.result <- function(dds, mode){
   return(res)
 }
 
-plot.volcano <- function(resList, resDir, fcCutoff=4, padjCutoff=2){
+plot.volcano <- function(resList, resDir, case, fcCutoff, padjCutoff){
   
-  imgPath <- paste0(resDir, "imgs/")
-  
-  if (!dir.exists(imgPath)){
-    dir.create(imgPath)
-  } 
+  imgPath <- paste0(getwd(), "/imgs/")
+  dir.create(imgPath, showWarnings = FALSE)
 
   resList <- mutate(resList, 
                          group = ifelse( (log2FoldChange >= fcCutoff & -log10(padj) > padjCutoff), "R", 
@@ -110,6 +107,7 @@ plot.volcano <- function(resList, resDir, fcCutoff=4, padjCutoff=2){
   volcano <- ggplot(resList, mapping = aes(x = log2FoldChange, y = -log10(padj))) + 
     geom_point(aes(color = group)) + 
     scale_color_manual(values = c("R" = "#EC7063", "G" = "#48C9B0", "B" = "#85929E")) + #1:red 2:green 3:gray
+    ggtitle(case) +
     xlab("log2 fold change") + 
     ylab("-log10 adjusted p-value") + 
     theme(legend.position = "none", 
@@ -127,11 +125,8 @@ plot.volcano <- function(resList, resDir, fcCutoff=4, padjCutoff=2){
 
 plot_QQ_ExRank <- function(res, resDir){
   
-  imgPath <- paste0(resDir, "imgs/")
-  
-  if (!dir.exists(imgPath)){
-    dir.create(imgPath)
-  } 
+  imgPath <- paste0(resDir, "/imgs/")
+  dir.create(imgPath, showWarnings = FALSE)
   
   res <- subset(res, res$aberrant)
   
@@ -151,21 +146,28 @@ plot_QQ_ExRank <- function(res, resDir){
 #############################
 # Main
 #############################
+srcDir <- getwd()
+
 print("Starting analysis")
 args <- commandArgs(trailingOnly = TRUE)
 
-mode <- args[[1]]
-dataPath <- args[[2]]
-resDir <- args[[3]]
-fcCutoff <- args[[4]]
-fcCutoff <- as.numeric(args[[4]])
-padjCutoff <- as.numeric(args[[5]])
+mode <- "-all"#args[[1]]
+dataPath <- "../6.STATS"#args[[2]]
+resDir <- "../results/group"#args[[3]]
+if (length(args) > 3){
+  fcCutoff <- as.numeric(args[[4]])
+  padjCutoff <- as.numeric(args[[5]])
+}else{
+  fcCutoff <- 2.5
+  padjCutoff <- 2
+}
+
+dir.create(resDir, showWarnings = FALSE)
 
 task <- vector()
 if (mode == "-all"){
 	task <- c("DESeq2", "OUTRIDER")
 } else if (mode == "-outrider"){
-  print("OUTRIDEROK")
 	task <- c("OUTRIDER")
 } else if (mode == "-deseq2"){
 	task <- c("DESeq2")
@@ -174,23 +176,38 @@ if (mode == "-all"){
 if ("DESeq2" %in% task){
 
 	### Run DESeq2
-	print("Running DESeq2 analysis...")
 	if (file_test("-d", dataPath)){
 		### Fetch htseq data
+	  print("Running DESeq2 analysis...")
 		returnVal <- get.count(dataPath)
 		dds <- run.DESeq2(dataPath, returnVal$table, returnVal$condition, resDir)
 	} else{
+	  print("Reading rds data...")
 		dds <- readRDS(file=dataPath)
+	}
+  
+  setwd(resDir)
+  resDir <- getwd()
+  case_list <- seq(1,37)
+  case_list <- sprintf("%03dA", case_list)
+  for (i in case_list){
+    print(paste0("Processing ", i))
+    
+    dir.create(paste0(resDir, "/RNA-", i), showWarnings = FALSE)
+    setwd(paste0(resDir, "/RNA-", i))
+    dir.create(paste0(getwd(), "/DESeq2"), showWarnings = FALSE)
+    setwd(paste0(getwd(), "/DESeq2"))
+    
+  	message("extracting result")
+  	desResult <- extract.result(dds, "DESeq2", i)
+  
+  	message("generating volcano plot")
+  	desResult <- plot.volcano(desResult, resDir, i, fcCutoff, padjCutoff)
+  
+  	message("Dumping results...")
+  	write.csv(desResult, paste0(getwd(), "/DESeq2_result.csv"), row.names = FALSE)
+  	setwd(resDir)
   }
-
-	message("extracting result")
-	desResult <- extract.result(dds, "DESeq2")
-
-	message("generating volcano plot")
-	desResult <- plot.volcano(desResult, resDir, fcCutoff, padjCutoff)
-
-	print("Dumping results...")
-	write.csv(desResult, paste0(resDir, "DESeq2_result.csv"), row.names = FALSE)
 }
 
 if ("OUTRIDER" %in% task){
@@ -209,6 +226,6 @@ if ("OUTRIDER" %in% task){
 	plot_QQ_ExRank(odsResult, resDir)
 
 	print("Dumping results...")
-	write.csv(odsResult, paste0(resDir, "OUTRIDER_result.csv"), row.names = FALSE)
+	write.csv(odsResult, paste0(resDir, "/OUTRIDER_result.csv"), row.names = FALSE)
 }
 
